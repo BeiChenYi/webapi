@@ -7,8 +7,8 @@ WORKDIR /app
 # 复制 package.json 和 package-lock.json (如果有)
 COPY backend/package*.json ./
 
-# 安装依赖
-RUN npm ci --only=production
+# 安装依赖（使用 npm install 因为可能没有 package-lock.json）
+RUN npm install --production
 
 # 复制后端源代码
 COPY backend/ ./
