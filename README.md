@@ -75,20 +75,34 @@
 
 ## 快速开始
 
-### 1. 使用 Docker 运行（推荐）
+### 1. 直接运行（最简单）
 
-确保已安装 Docker 和 Docker Compose。
+项目已提供一键启动脚本，无需 Docker。
+
+#### Linux / macOS
 
 ```bash
 # 克隆仓库
 git clone https://github.com/BeiChenYi/webapi.git
 cd webapi
 
-# 启动服务（使用默认 Token）
-docker-compose -f docker/docker-compose.yml up -d
+# 赋予执行权限并运行
+chmod +x run.sh
+./run.sh
 ```
 
-访问 http://localhost:3000 即可使用。
+#### Windows
+
+```bash
+# 克隆仓库
+git clone https://github.com/BeiChenYi/webapi.git
+cd webapi
+
+# 双击 run.bat 或命令行执行
+run.bat
+```
+
+脚本会自动安装依赖并启动后端服务器。
 
 ### 2. 手动运行（开发环境）
 
@@ -104,6 +118,21 @@ npm start
 #### 前端
 
 前端文件由后端静态服务提供，直接访问 http://localhost:3000 即可。
+
+### 3. 使用 Docker 运行（可选）
+
+确保已安装 Docker 和 Docker Compose。
+
+```bash
+# 克隆仓库
+git clone https://github.com/BeiChenYi/webapi.git
+cd webapi
+
+# 启动服务（使用默认 Token）
+docker-compose -f docker/docker-compose.yml up -d
+```
+
+访问 http://localhost:3000 即可使用。
 
 ### 3. 环境变量
 
