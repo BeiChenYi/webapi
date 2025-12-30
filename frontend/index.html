@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线表格管理系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-table"></i> 在线表格管理系统</h1>
+            <p class="subtitle">支持实时增删改查、导入导出CSV，通过API Token进行安全编辑</p>
+        </header>
+
+        <main>
+            <section class="control-panel">
+                <div class="panel-left">
+                    <h2><i class="fas fa-cog"></i> 控制面板</h2>
+                    <div class="token-section">
+                        <label for="token-input"><i class="fas fa-key"></i> API Token（编辑操作需要）</label>
+                        <div class="token-input-group">
+                            <input type="password" id="token-input" placeholder="输入您的API Token" value="xiaoSya@oge1@2123SS">
+                            <button id="toggle-token-visibility" class="icon-btn" title="显示/隐藏">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p class="hint">Token用于添加、修改、删除及导入CSV操作。读取和导出CSV无需Token。</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="add-row-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加新行
+                        </button>
+                        <button id="export-csv-btn" class="btn btn-secondary">
+                            <i class="fas fa-file-export"></i> 导出CSV
+                        </button>
+                        <div class="import-section">
+                            <label for="csv-file" class="btn btn-secondary">
+                                <i class="fas fa-file-import"></i> 导入CSV
+                            </label>
+                            <input type="file" id="csv-file" accept=".csv" style="display: none;">
+                        </div>
+                        <button id="refresh-btn" class="btn btn-outline">
+                            <i class="fas fa-sync-alt"></i> 刷新数据
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-right">
+                    <h2><i class="fas fa-info-circle"></i> 系统状态</h2>
+                    <div class="status-card">
+                        <p><i class="fas fa-database"></i> 后端API: <span id="api-status">正在检测...</span></p>
+                        <p><i class="fas fa-list-ol"></i> 当前行数: <span id="row-count">0</span></p>
+                        <p><i class="fas fa-user-check"></i> Token状态: <span id="token-status">未验证</span></p>
+                    </div>
+                    <div class="instructions">
+                        <h3><i class="fas fa-lightbulb"></i> 使用说明</h3>
+                        <ul>
+                            <li>双击表格单元格可编辑内容。</li>
+                            <li>点击行尾的 <i class="fas fa-trash"></i> 可删除该行。</li>
+                            <li>导入CSV文件时请确保包含“姓名,年龄,部门,入职日期”列。</li>
+                            <li>API Token在环境变量中预设，如需更改请修改后端配置。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="table-section">
+                <h2><i class="fas fa-spreadsheet"></i> 数据表格</h2>
+                <div class="table-container">
+                    <table id="spreadsheet-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>姓名</th>
+                                <th>年龄</th>
+                                <th>部门</th>
+                                <th>入职日期</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <p>表格每10秒自动刷新。最后更新: <span id="last-update">--</span></p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 在线表格管理系统 | 基于 Node.js + Express + SQLite 构建 | 使用 Docker 部署</p>
+            <p class="links">
+                <a href="/health" target="_blank"><i class="fas fa-heartbeat"></i> 健康检查</a> |
+                <a href="/api/data" target="_blank"><i class="fas fa-code"></i> API数据 (JSON)</a> |
+                <a href="/api/data/export" target="_blank"><i class="fas fa-download"></i> 直接导出CSV</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- 添加行模态框 -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> 添加新行</h3>
+            <form id="add-form">
+                <div class="form-group">
+                    <label for="add-name">姓名 *</label>
+                    <input type="text" id="add-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-age">年龄</label>
+                    <input type="number" id="add-age" min="1" max="120">
+                </div>
+                <div class="form-group">
+                    <label for="add-department">部门</label>
+                    <input type="text" id="add-department">
+                </div>
+                <div class="form-group">
+                    <label for="add-join-date">入职日期</label>
+                    <input type="date" id="add-join-date">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancel-add">取消</button>
+                    <button type="submit" class="btn btn-primary">确认添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑单元格模态框 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-edit"></i> 编辑单元格</h3>
+            <p>正在编辑: <span id="edit-cell-info"></span></p>
+            <div class="form-group">
+                <label for="edit-value">新值</label>
+                <input type="text" id="edit-value">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" id="cancel-edit">取消</button>
+                <button type="button" class="btn btn-primary" id="save-edit">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  spreadsheet-app:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: online-spreadsheet
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_PATH=./db/database.sqlite
+      - SECRET_API_TOKEN=${SECRET_API_TOKEN:-xiaoSya@oge1@2123SS}
+    volumes:
+      # 持久化数据库文件
+      - spreadsheet_data:/app/db
+      # 持久化上传目录（可选）
+      - spreadsheet_uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - spreadsheet-network
+
+  # 可选：添加一个简单的 Nginx 作为反向代理（如果需要）
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   depends_on:
+  #     - spreadsheet-app
+  #   networks:
+  #     - spreadsheet-network
+
+networks:
+  spreadsheet-network:
+    driver: bridge
+
+volumes:
+  spreadsheet_data:
+    driver: local
+  spreadsheet_uploads:
+    driver: local
