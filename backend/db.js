@@ -1,8 +1,16 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const dbPath = process.env.DATABASE_PATH || './db/database.sqlite';
+
+// 确保数据库目录存在
+const dir = path.dirname(dbPath);
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
 const db = new sqlite3.Database(dbPath);
 
 // 初始化数据库表
