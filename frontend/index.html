@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线表格管理系统</title>
+    <title>三千里风 - 轻量级在线表格</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-table"></i> 在线表格管理系统</h1>
-            <p class="subtitle">支持实时增删改查、导入导出CSV，通过API Token进行安全编辑</p>
+            <h1><i class="fas fa-table"></i> 三千里风</h1>
+            <p class="subtitle">轻量级在线表格，随风而致 - 支持实时增删改查、导入导出CSV，通过API Token进行安全编辑</p>
         </header>
 
         <main>
@@ -93,7 +93,7 @@
         </main>
 
         <footer>
-            <p>© 2025 在线表格管理系统 | 基于 Node.js + Express + SQLite 构建 | 使用 Docker 部署</p>
+            <p>© 2025 三千里风 | 基于 Node.js + Express + SQLite 构建 | 使用 Docker 部署</p>
             <p class="links">
                 <a href="/health" target="_blank"><i class="fas fa-heartbeat"></i> 健康检查</a> |
                 <a href="/api/data" target="_blank"><i class="fas fa-code"></i> API数据 (JSON)</a> |
@@ -145,6 +145,15 @@
                 <button type="button" class="btn btn-primary" id="save-edit">保存</button>
             </div>
         </div>
+    </div>
+
+    <!-- Toast 通知容器 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 加载覆盖层 -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>加载中...</p>
     </div>
 
     <script src="script.js"></script>

@@ -1,13 +1,13 @@
 {
   "name": "online-spreadsheet-backend",
   "version": "1.0.0",
-  "description": "Backend for online spreadsheet with Node.js and Express",
+  "description": "三千里风 (Sanqianli Wind) - 轻量级在线表格后端，基于 Node.js + Express + SQLite",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "keywords": ["express", "sqlite", "spreadsheet"],
+  "keywords": ["express", "sqlite", "spreadsheet", "sanqianli", "online-table"],
   "author": "",
   "license": "MIT",
   "dependencies": {

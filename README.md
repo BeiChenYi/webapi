@@ -1,4 +1,4 @@
-# 在线表格管理系统 (Online Spreadsheet Management System)
+# 三千里风 (Sanqianli Wind) - 轻量级在线表格，随风而致
 
 一个基于 Web 的轻量级在线表格应用，支持数据的增删改查、导入导出 CSV，并通过 API Token 进行安全鉴权。使用 Node.js + Express + SQLite 构建，前端使用原生 HTML/CSS/JavaScript，可通过 Docker 快速部署。
 
@@ -16,8 +16,12 @@
   - 基于 API Token 的简单鉴权
   - Token 可在前端输入，用于保护写操作
   - 读取数据与导出 CSV 无需 Token
-- **系统状态**：
-  - 实时显示后端连接状态、当前行数、Token 状态
+- **用户界面**：
+  - 现代化响应式设计，支持移动端
+  - 实时 Toast 通知（成功、错误、警告、信息）
+  - 加载覆盖层，避免重复操作
+  - 空表格状态提示与引导按钮
+  - 系统状态卡片（后端连接、行数、Token 状态、最后更新时间）
   - 每10秒自动刷新表格数据
 - **部署友好**：
   - 提供 Dockerfile 和 docker-compose.yml

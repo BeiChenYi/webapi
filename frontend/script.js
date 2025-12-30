@@ -24,6 +24,63 @@ const cancelEditBtn = document.getElementById('cancel-edit');
 const saveEditBtn = document.getElementById('save-edit');
 const editValueInput = document.getElementById('edit-value');
 const editCellInfoSpan = document.getElementById('edit-cell-info');
+const loadingOverlay = document.getElementById('loading-overlay');
+const toastContainer = document.getElementById('toast-container');
+
+// 实用函数
+function showToast(title, message, type = 'info', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+    toastContainer.appendChild(toast);
+
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        toast.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
+function showLoading(message = '加载中...') {
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.querySelector('p').textContent = message;
+}
+
+function hideLoading() {
+    loadingOverlay.style.display = 'none';
+}
+
+function renderEmptyTable() {
+    spreadsheetTable.innerHTML = `
+        <tr class="empty-table">
+            <td colspan="7">
+                <i class="fas fa-table"></i>
+                <h3>暂无数据</h3>
+                <p>表格为空，请点击“添加新行”或导入CSV文件来添加数据。</p>
+                <button id="add-first-row" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 添加第一行
+                </button>
+            </td>
+        </tr>
+    `;
+    document.getElementById('add-first-row')?.addEventListener('click', () => {
+        addRowBtn.click();
+    });
+}
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
@@ -69,7 +126,7 @@ function setupEventListeners() {
         const department = document.getElementById('add-department').value.trim();
         const joinDate = document.getElementById('add-join-date').value;
         if (!name) {
-            alert('姓名不能为空');
+            showToast('验证失败', '姓名不能为空', 'warning');
             return;
         }
         addRow({ name, age, department, join_date: joinDate });
@@ -152,18 +209,26 @@ async function validateToken() {
 
 // 加载表格数据
 async function loadTableData() {
+    showLoading('正在加载表格数据...');
     try {
         const response = await fetch(`${API_BASE}/api/data`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const rows = await response.json();
         currentRows = rows;
-        renderTable(rows);
+        if (rows.length === 0) {
+            renderEmptyTable();
+        } else {
+            renderTable(rows);
+        }
         updateRowCount(rows.length);
         updateLastUpdate();
         validateToken();
+        showToast('数据加载成功', `已加载 ${rows.length} 行数据`, 'success', 3000);
     } catch (error) {
         console.error('Failed to load table data:', error);
-        alert('加载数据失败，请检查后端服务。');
+        showToast('数据加载失败', '请检查后端服务是否正常运行', 'error');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -240,7 +305,7 @@ async function saveCellEdit() {
         editModal.style.display = 'none';
         currentEditingCell = null;
     } catch (error) {
-        alert('更新失败: ' + error.message);
+        showToast('更新失败', error.message, 'error');
     }
 }
 
@@ -248,9 +313,10 @@ async function saveCellEdit() {
 async function addRow(data) {
     const token = getToken();
     if (!token) {
-        alert('请先设置 API Token');
+        showToast('Token 缺失', '请先设置 API Token', 'warning');
         return;
     }
+    showLoading('正在添加新行...');
     try {
         const response = await fetch(`${API_BASE}/api/data`, {
             method: 'POST',
@@ -265,10 +331,12 @@ async function addRow(data) {
             throw new Error(err.error || '添加失败');
         }
         addModal.style.display = 'none';
+        showToast('添加成功', '新行已添加到表格', 'success');
         loadTableData(); // 重新加载数据
-        alert('添加成功！');
     } catch (error) {
-        alert('添加失败: ' + error.message);
+        showToast('添加失败', error.message, 'error');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -276,32 +344,43 @@ async function addRow(data) {
 async function updateRow(id, data) {
     const token = getToken();
     if (!token) {
-        alert('请先设置 API Token');
+        showToast('Token 缺失', '请先设置 API Token', 'warning');
         throw new Error('No token');
     }
-    const response = await fetch(`${API_BASE}/api/data/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-    });
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || '更新失败');
+    showLoading('正在更新行...');
+    try {
+        const response = await fetch(`${API_BASE}/api/data/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || '更新失败');
+        }
+        showToast('更新成功', '行数据已更新', 'success');
+        return response.json();
+    } catch (error) {
+        showToast('更新失败', error.message, 'error');
+        throw error;
+    } finally {
+        hideLoading();
     }
-    return response.json();
 }
 
 // 删除行
 async function deleteRow(id) {
-    if (!confirm('确定要删除这一行吗？')) return;
+    // 使用自定义确认对话框（简单使用 confirm）
+    if (!confirm('确定要删除这一行吗？此操作不可撤销。')) return;
     const token = getToken();
     if (!token) {
-        alert('请先设置 API Token');
+        showToast('Token 缺失', '请先设置 API Token', 'warning');
         return;
     }
+    showLoading('正在删除行...');
     try {
         const response = await fetch(`${API_BASE}/api/data/${id}`, {
             method: 'DELETE',
@@ -313,10 +392,12 @@ async function deleteRow(id) {
             const err = await response.json();
             throw new Error(err.error || '删除失败');
         }
+        showToast('删除成功', '行已从表格中删除', 'success');
         loadTableData(); // 重新加载数据
-        alert('删除成功！');
     } catch (error) {
-        alert('删除失败: ' + error.message);
+        showToast('删除失败', error.message, 'error');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -324,9 +405,10 @@ async function deleteRow(id) {
 async function importCsv(file) {
     const token = getToken();
     if (!token) {
-        alert('请先设置 API Token');
+        showToast('Token 缺失', '请先设置 API Token', 'warning');
         return;
     }
+    showLoading('正在导入 CSV 文件...');
     const formData = new FormData();
     formData.append('csvfile', file);
     try {
@@ -341,10 +423,13 @@ async function importCsv(file) {
         if (!response.ok) {
             throw new Error(result.error || '导入失败');
         }
-        alert(`导入成功！共导入了 ${result.inserted || result.message} 行。`);
+        const inserted = result.inserted || result.message;
+        showToast('导入成功', `共导入了 ${inserted} 行数据`, 'success');
         loadTableData();
     } catch (error) {
-        alert('导入失败: ' + error.message);
+        showToast('导入失败', error.message, 'error');
+    } finally {
+        hideLoading();
     }
 }
 
