@@ -63,6 +63,7 @@
 | 端点 | 方法 | 权限 | 说明 |
 |------|------|------|------|
 | `/api/data` | GET | 公开 | 获取所有行数据（JSON） |
+| `/api/data/:id` | GET | 公开 | 获取单条数据（JSON），支持查询参数 `field` 读取特定单元格（如 `?field=name`） |
 | `/api/data` | POST | 需 Token | 新增一行数据 |
 | `/api/data/:id` | PUT | 需 Token | 更新指定行 |
 | `/api/data/:id` | DELETE | 需 Token | 删除指定行 |

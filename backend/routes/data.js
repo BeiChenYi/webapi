@@ -31,6 +31,32 @@ router.get('/', (req, res) => {
   });
 });
 
+// 获取单条数据（公开），支持查询特定字段
+router.get('/:id', (req, res) => {
+  const { id } = req.params;
+  const { field } = req.query;
+  let sql = 'SELECT * FROM rows WHERE id = ?';
+  db.get(sql, [id], (err, row) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Database error' });
+    } else if (!row) {
+      res.status(404).json({ error: 'Row not found' });
+    } else {
+      if (field && row.hasOwnProperty(field)) {
+        // 返回单个字段的值
+        res.json({ [field]: row[field] });
+      } else if (field) {
+        // 字段不存在
+        res.status(400).json({ error: `Field '${field}' does not exist` });
+      } else {
+        // 返回整行
+        res.json(row);
+      }
+    }
+  });
+});
+
 // 新增一行（需 Token）
 router.post('/', authenticateToken, (req, res) => {
   const { name, age, department, join_date } = req.body;
